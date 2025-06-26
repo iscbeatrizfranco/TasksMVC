@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TasksMVC.Models;
 
 namespace TasksMVC
 {
@@ -8,8 +9,11 @@ namespace TasksMVC
         {
         }
 
-        protected ApplicationDbContext()
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            //modelBuilder.Entity<Assignment>().Property(t => t.Title).HasMaxLength(250).IsRequired();
         }
+        public DbSet<Assignment> Assignments { get; set; }
     }
 }
