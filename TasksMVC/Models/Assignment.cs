@@ -12,7 +12,6 @@ namespace TasksMVC.Models
         public string Description { get; set; }
         public int Order { get; set; }
         public DateTime CreationDate { get; set; }
-
-
+        public List<SubAssignment>? SubAssignments { get; set; }
     }
 }
