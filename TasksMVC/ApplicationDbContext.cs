@@ -16,5 +16,6 @@ namespace TasksMVC
         }
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<SubAssignment> SubAssigments { get; set; }
+        public DbSet<Attachment> Attachments { get; set; }
     }
 }
