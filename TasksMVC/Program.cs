@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TasksMVC;
 
@@ -8,6 +10,20 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer("name=DefaultConnection"));
+
+builder.Services.AddAuthentication();
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(
+    opciones => {
+        opciones.SignIn.RequireConfirmedAccount = false;
+    }).AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme,
+    options =>
+    {
+        options.LoginPath = "/users/login";
+        options.AccessDeniedPath = "/users/login";
+    });
 
 var app = builder.Build();
 
@@ -22,6 +38,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
