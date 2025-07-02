@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TasksMVC.Models
+namespace TasksMVC.Entities
 {
     public class Assignment
     {

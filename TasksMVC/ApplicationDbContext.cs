@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TasksMVC.Models;
+using TasksMVC.Entities;
 
 namespace TasksMVC
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace TasksMVC.Models
+namespace TasksMVC.Entities
 {
     public class Attachment
     {

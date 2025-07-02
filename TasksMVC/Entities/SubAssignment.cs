@@ -1,4 +1,4 @@
-﻿namespace TasksMVC.Models
+﻿namespace TasksMVC.Entities
 {
     public class SubAssignment
     {
