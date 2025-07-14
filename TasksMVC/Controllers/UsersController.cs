@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TasksMVC.Models;
 
@@ -11,12 +12,15 @@ namespace TasksMVC.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly ApplicationDbContext dbContext;
 
         public UsersController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            ApplicationDbContext dbContext)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.dbContext = dbContext;
         }
 
         [AllowAnonymous]
@@ -159,6 +163,19 @@ namespace TasksMVC.Controllers
             message = "Ha ocurrido un error agregando el login";
             return RedirectToAction("login", routeValues: new { message });
 
+        }
+
+        public async Task<IActionResult> List(string message=null)
+        {
+            var users = await dbContext.Users.Select(u => new UserViewModel 
+            {
+                Email = u.Email,
+            }).ToListAsync();
+
+            var model = new UsersListViewModel();
+            model.Users = users;
+            model.Message = message;
+            return View(model);
         }
     }
 }
