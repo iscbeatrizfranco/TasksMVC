@@ -167,6 +167,8 @@ namespace TasksMVC.Controllers
 
         }
 
+        [HttpGet]
+        [Authorize(Roles = Services.Constants.RolAdmin)]
         public async Task<IActionResult> List(string message = null)
         {
             var users = await dbContext.Users.Select(u => new UserViewModel
@@ -181,6 +183,7 @@ namespace TasksMVC.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Services.Constants.RolAdmin)]
         public async Task<IActionResult> AdminGrant(string email)
         {
             var user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
@@ -199,6 +202,7 @@ namespace TasksMVC.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = Services.Constants.RolAdmin)]
         public async Task<IActionResult> AdminRevoke(string email) 
         {
             var user =  await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
