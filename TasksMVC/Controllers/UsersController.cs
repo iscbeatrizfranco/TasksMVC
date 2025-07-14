@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System.Security.Claims;
 using TasksMVC.Models;
+using TasksMVC.Services;
 
 namespace TasksMVC.Controllers
 {
@@ -59,7 +61,7 @@ namespace TasksMVC.Controllers
         [AllowAnonymous]
         public IActionResult Login(string message = null)
         {
-            if (message is not null) 
+            if (message is not null)
             {
                 ViewData["message"] = message;
             }
@@ -97,37 +99,37 @@ namespace TasksMVC.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public ChallengeResult ExternLogin(string provider, string returnUrl = null) 
+        public ChallengeResult ExternLogin(string provider, string returnUrl = null)
         {
             var redirectUrl = Url.Action("ExternalUserRegister", values: new { provider, returnUrl });
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, returnUrl);
-            return new ChallengeResult(provider,properties);
+            return new ChallengeResult(provider, properties);
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> ExternalUserRegister(string returnUrl = null,
-            string remoteError = null) 
+            string remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             var message = "";
-            if (remoteError != null) 
+            if (remoteError != null)
             {
                 message = $"Error del proveedor externo: {remoteError}";
-                return RedirectToAction("login", routeValues: new { message});
+                return RedirectToAction("login", routeValues: new { message });
             }
 
             var info = await signInManager.GetExternalLoginInfoAsync();
-            if (info == null) 
+            if (info == null)
             {
                 message = "Error cargando la data de login externo";
                 return RedirectToAction("login", routeValues: new { message });
             }
 
             var externalLoginResult = await signInManager.ExternalLoginSignInAsync(
-                info.LoginProvider, info.ProviderKey, isPersistent: true,bypassTwoFactor: true);
+                info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
 
             //Ya la cuenta existe
-            if (externalLoginResult.Succeeded) 
+            if (externalLoginResult.Succeeded)
             {
                 return LocalRedirect(returnUrl);
             }
@@ -137,7 +139,7 @@ namespace TasksMVC.Controllers
             {
                 email = info.Principal.FindFirstValue(ClaimTypes.Email);
             }
-            else 
+            else
             {
                 message = "Error leyendo el email del usuario del proveedor";
                 return RedirectToAction("login", routeValues: new { message });
@@ -146,15 +148,15 @@ namespace TasksMVC.Controllers
             var user = new IdentityUser { Email = email, UserName = email };
             var userCreateResult = await userManager.CreateAsync(user);
 
-            if (!userCreateResult.Succeeded) 
+            if (!userCreateResult.Succeeded)
             {
                 message = userCreateResult.Errors.First().Description;
                 return RedirectToAction("login", routeValues: new { message });
             }
 
-            var loginAddResult = await userManager.AddLoginAsync(user,info);
+            var loginAddResult = await userManager.AddLoginAsync(user, info);
 
-            if (loginAddResult.Succeeded) 
+            if (loginAddResult.Succeeded)
             {
                 await signInManager.SignInAsync(user, isPersistent: true, info.LoginProvider);
                 return LocalRedirect(returnUrl);
@@ -165,9 +167,9 @@ namespace TasksMVC.Controllers
 
         }
 
-        public async Task<IActionResult> List(string message=null)
+        public async Task<IActionResult> List(string message = null)
         {
-            var users = await dbContext.Users.Select(u => new UserViewModel 
+            var users = await dbContext.Users.Select(u => new UserViewModel
             {
                 Email = u.Email,
             }).ToListAsync();
@@ -176,6 +178,43 @@ namespace TasksMVC.Controllers
             model.Users = users;
             model.Message = message;
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdminGrant(string email)
+        {
+            var user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            await userManager.AddToRoleAsync(user, Services.Constants.RolAdmin);
+
+            return RedirectToAction("List",
+                routeValues: new
+                {
+                    message = "Rol asignado correctamente a " + email
+                });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdminRevoke(string email) 
+        {
+            var user =  await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            await userManager.RemoveFromRoleAsync(user, Services.Constants.RolAdmin);
+
+            return RedirectToAction("List",
+                routeValues: new
+                {
+                    message = "Rol removido correctamente a " + email
+                });
         }
     }
 }
